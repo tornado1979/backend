@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction, Router } from 'express';
 import logger from '../utils/logger';
+import searchService from '../services/searchService';
 
 const router: Router = express.Router();
 
@@ -28,10 +29,23 @@ router.get('/:param', (req: Request, res: Response, next: NextFunction) => {
     }
 
     logger.debug(`Processing valid search query: "${param}"`);
-    logger.info(`Search processed successfully`, { query: param });
-    res.json({
-      message: 'Search query received',
+
+    // Perform the search using trie-search
+    const results = searchService.search(param, 20);
+
+    logger.info(`Search completed`, {
       query: param,
+      resultCount: results.length,
+    });
+
+    res.json({
+      query: param,
+      results: results,
+      total: results.length,
+      message:
+        results.length > 0
+          ? 'Search completed successfully'
+          : 'No results found',
     });
   } catch (error) {
     logger.error(`Search error: ${error}`, { query: req.params.param, error });
