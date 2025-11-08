@@ -11,7 +11,15 @@
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "docker:build": "docker build -t serverclientapp-backend .",
+    "docker:run": "docker run -p 8080:8080 -e PORT=8080 --name serverclientapp-backend serverclientapp-backend",
+    "docker:stop": "docker stop serverclientapp-backend",
+    "docker:remove": "docker rm serverclientapp-backend",
+    "docker:logs": "docker logs serverclientapp-backend",
+    "docker:dev": "docker-compose --profile dev up --build",
+    "docker:prod": "docker-compose up --build -d",
+    "docker:down": "docker-compose down"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
