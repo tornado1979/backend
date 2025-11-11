@@ -2,18 +2,7 @@ import TrieSearch from 'trie-search';
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '../utils/logger';
-
-interface Address {
-  city: string;
-  county: string;
-  district: string;
-  municipality: string;
-  municipalityNumber: number;
-  postNumber: number;
-  street: string;
-  type: string;
-  typeCode: number;
-}
+import { Address } from '../types';
 
 class SearchService {
   private trie!: TrieSearch<Address>;
@@ -26,12 +15,11 @@ class SearchService {
 
   private initializeTrie(): void {
     try {
-      // Load addresses data
       const dataPath = path.join(__dirname, '../../data/addresses.json');
       const rawData = fs.readFileSync(dataPath, 'utf8');
       this.addresses = JSON.parse(rawData) as Address[];
 
-      // Create trie-search instance with multiple searchable fields
+      // Create trie-search instance, and add the keyfields
       this.trie = new TrieSearch(['street', 'city', 'municipality', 'county'], {
         min: 3, // minimum characters to start search
         indexField: undefined,
@@ -60,12 +48,12 @@ class SearchService {
       logger.debug('Performing search', { query: cleanQuery });
 
       // Search using trie-search
-      const results = this.trie.search(cleanQuery) as Address[];
+      const data = this.trie.search(cleanQuery) as Address[];
 
       // Limit results
-      const limitedResults = results.slice(0, limit || this.resLimit);
+      const limitedData = data.slice(0, limit || this.resLimit);
 
-      return limitedResults;
+      return limitedData;
     } catch (error) {
       logger.error('Search operation failed', { query, error });
       return [];

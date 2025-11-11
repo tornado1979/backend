@@ -23,14 +23,11 @@ describe('Health Check Error Handling', () => {
     const response = await request(app).get('/health');
 
     expect(response.status).toBe(503);
-    expect(response.body).toHaveProperty('status', 'error');
+    expect(response.body).toHaveProperty('success', false);
+    expect(response.body).toHaveProperty('error', 'Simulated uptime error');
+    expect(response.body).toHaveProperty('message', 'Health check failed');
     expect(response.body).toHaveProperty('timestamp');
-    expect(response.body).toHaveProperty(
-      'error',
-      'Service temporarily unavailable'
-    );
 
-    // Restore original function
     process.uptime = originalUptime;
   });
 });

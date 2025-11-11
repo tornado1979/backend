@@ -27,11 +27,14 @@ describe('Search Route Error Handling', () => {
     const response = await request(app).get('/search/oslo');
 
     expect(response.status).toBe(500);
-    expect(response.body).toHaveProperty('error', 'Server error');
+    expect(response.body).toHaveProperty('success', false);
     expect(response.body).toHaveProperty(
-      'message',
+      'error',
       'Simulated search service error'
     );
-    expect(response.body).toHaveProperty('status', 500);
+    expect(response.body).toHaveProperty(
+      'message',
+      'Internal server error occurred'
+    );
   });
 });

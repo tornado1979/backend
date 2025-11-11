@@ -4,6 +4,7 @@ import express, { Request, Response, NextFunction, Application } from 'express';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import logger from './utils/logger';
+import { ResponseHelper } from './utils/responseHelper';
 
 import searchRouter from './routes/search.routes';
 
@@ -20,25 +21,25 @@ app.use('/search', searchRouter);
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
   try {
-    const healthCheck = {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
+    const healthData = {
       uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development',
     };
 
     logger.debug('Health check requested', {
-      uptime: healthCheck.uptime,
-      environment: healthCheck.environment,
+      uptime: healthData.uptime,
+      environment: process.env.NODE_ENV || 'development',
     });
-    res.status(200).json(healthCheck);
+    ResponseHelper.success(res, healthData, 'Service is healthy');
   } catch (error) {
     logger.error('Health check failed', { error });
-    res.status(503).json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      error: 'Service temporarily unavailable',
-    });
+    ResponseHelper.error(
+      res,
+      error instanceof Error
+        ? error.message
+        : 'Service temporarily unavailable',
+      'Health check failed',
+      503
+    );
   }
 });
 
@@ -57,11 +58,12 @@ app.use((req: Request, res: Response, _next: NextFunction) => {
     });
   }
 
-  res.status(404).json({
-    error: 'Endpoint not found',
-    message: `The requested endpoint '${req.originalUrl}' does not exist`,
-    availableEndpoints: ['GET /search/:query - Search with a query parameter'],
-  });
+  return ResponseHelper.error(
+    res,
+    'Endpoint not found',
+    `The requested endpoint '${req.originalUrl}' does not exist`,
+    404
+  );
 });
 
 // error handler for other errors (500, etc)
@@ -82,12 +84,12 @@ app.use(
       ...(isDevelopment && { stack: err.stack }),
     });
 
-    res.status(err.status || 500).json({
-      error: 'Server error',
-      message: err.message || 'Something went wrong',
-      status: err.status || 500,
-      ...(isDevelopment && { stack: err.stack }),
-    });
+    return ResponseHelper.serverError(
+      res,
+      err.message || 'Something went wrong',
+      'Internal server error occurred',
+      err.status || 500
+    );
   }
 );
 

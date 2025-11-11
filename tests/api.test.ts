@@ -19,47 +19,61 @@ describe('API Endpoints', () => {
       const response = await request(app).get('/health');
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('status', 'ok');
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('data.uptime');
+      expect(response.body).toHaveProperty('message', 'Service is healthy');
       expect(response.body).toHaveProperty('timestamp');
-      expect(response.body).toHaveProperty('uptime');
-      expect(response.body).toHaveProperty('environment');
     });
   });
 
   describe('GET /search', () => {
-    it('should return 404 for empty search', async () => {
+    it('should return 404 when no query parameter is provided', async () => {
       const response = await request(app).get('/search');
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty('success', false);
+      expect(response.body).toHaveProperty(
+        'error',
+        'No search query provided. Use /search/:query'
+      );
+      expect(response.body).toHaveProperty(
+        'message',
+        'Missing required parameter'
+      );
+      expect(response.body).toHaveProperty('timestamp');
     });
 
     it('should return 400 for short search query', async () => {
       const response = await request(app).get('/search/ab');
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty('success', false);
       expect(response.body.error).toContain('at least 3 characters');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('timestamp');
     });
 
     it('should return search results for valid query', async () => {
       const response = await request(app).get('/search/oslo');
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('results');
-      expect(response.body).toHaveProperty('query', 'oslo');
-      expect(response.body).toHaveProperty('total');
-      expect(Array.isArray(response.body.results)).toBe(true);
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty(
+        'message',
+        'Search completed successfully'
+      );
+      expect(response.body).toHaveProperty('timestamp');
     });
 
     it('should return empty array when no results found', async () => {
       const response = await request(app).get('/search/kdfhdskjfhsj');
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('results');
-      expect(response.body).toHaveProperty('query', 'kdfhdskjfhsj');
-      expect(response.body).toHaveProperty('total');
-      expect(response.body.results).toHaveLength(0);
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('data', []);
+      expect(response.body).toHaveProperty('message', 'No results found');
+      expect(response.body).toHaveProperty('timestamp');
     });
   });
 
@@ -68,7 +82,9 @@ describe('API Endpoints', () => {
       const response = await request(app).get('/nonexistent');
 
       expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('success', false);
       expect(response.body).toHaveProperty('error', 'Endpoint not found');
+      expect(response.body).toHaveProperty('timestamp');
     });
   });
 });
