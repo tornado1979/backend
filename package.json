@@ -16,14 +16,13 @@
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
-    "docker:build": "docker build -t serverclientapp-backend .",
-    "docker:run": "docker run -p 8080:8080 -e PORT=8080 --name serverclientapp-backend serverclientapp-backend",
-    "docker:stop": "docker stop serverclientapp-backend",
-    "docker:remove": "docker rm serverclientapp-backend",
-    "docker:logs": "docker logs serverclientapp-backend",
     "docker:dev": "docker-compose --profile dev up --build",
-    "docker:prod": "docker-compose up --build -d",
-    "docker:down": "docker-compose down"
+    "docker:prod": "docker-compose --profile prod up --build -d",
+    "docker:down": "docker-compose --profile prod down && docker-compose --profile dev down",
+    "docker:down:dev": "docker-compose --profile dev down",
+    "docker:down:prod": "docker-compose --profile prod down",
+    "docker:logs:dev": "docker-compose --profile dev logs -f backend-dev --tail=50",
+    "docker:logs:prod": "docker-compose --profile prod logs -f backend --tail=50"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
